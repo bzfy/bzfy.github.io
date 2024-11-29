@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+    <div id="app">
+        {{ msg }}
+
+        <h2>{{number}}</h2>
+        <h2>{{web.title}}</h2>
+        <h2><a href="https://bzfy.github.io/">{{web.url}}</a></h2>
+        <button v-on:click="edit()">modify</button> <br>
+        <button @click="edit()">modify</button>
+        
+        <!-- // v-blind:value = 'aaa' == :value = 'aaa' -->
+        <!-- // v-if = 'aaa'  -->
+        <!-- // v-show = 'aaa' ' -->
+        <!-- // v-blind:value = 'aaa' == :value = 'aaa' -->
+
+
+        <h2>{{web.show}}</h2>
+        <button @click="toggle(web.show)">toggle state</button>
+    </div>
+
+    <script>
+        Vue.createApp({
+            setup() {
+                const number = Vue.ref(10)
+
+                const web = Vue.reactive({
+                    title:'bzfy',
+                    url:'bzfy.com',
+                    show:false
+                })
+
+                const edit = () => {
+                    web.url = 'bzfy.github.io'
+                }
+
+
+                const toggle = show => {
+                    web.show = !show
+                }
+                return {
+                    msg: "success",
+                    number,
+                    web,
+                    edit,
+                    toggle
+                }
+            }
+        }).mount('#app')
+    </script>
+</body>
+</html>
