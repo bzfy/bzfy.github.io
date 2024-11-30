@@ -1,0 +1,95 @@
+<script type="text/javascript">
+    window.cnblogsConfig = {
+      info: {
+        blogIcon: ' ', //请自己添加一个图片链接，如果不需要的话可以删掉
+        name: 'UserName', // 用户名
+        startDate: '2000-00-00', // 入园时间，年-月-日。入园时间查看方法：鼠标停留园龄时间上，会显示入园时间
+        avatar: ' ', // 用户头像，请自己添加一个图片链接
+      },
+      banner: {
+        home: {
+            title: [
+                '每一个不曾起舞的日子，都是对生命的辜负。',
+                '公主死去了，屠龙的少年还在燃烧',
+                '当你真心渴望追求某种事物的话，整个宇宙都会联合起来帮你完成。', //此处内容可以自行添加或更改
+            ],
+            background: [
+                "https://xiaotong-sun.oss-cn-beijing.aliyuncs.com/bokeyuan/wallhaven-wqve97.png",
+                "https://xiaotong-sun.oss-cn-beijing.aliyuncs.com/bokeyuan/wallhaven-z8dg9y.png",
+            ],
+        },
+        article: {
+            background: [
+                "https://xiaotong-sun.oss-cn-beijing.aliyuncs.com/bokeyuan/wallhaven-wqve97.png",
+                "https://xiaotong-sun.oss-cn-beijing.aliyuncs.com/bokeyuan/wallhaven-z8dg9y.png",
+            ],
+        },
+    },
+    loading: {
+         rebound: {
+             tension: 16,
+         },
+         spinner: {
+             id: 'spinner',
+             radius: 90,
+         }
+    },
+    progressBar: {
+         color   : '#F08080',
+    },
+    rtMenu: {
+        downScrollDom: '#blog_post_info_block',
+    },
+    animate: {
+        homeBanner: {
+        enable: false, //这是背景动画，如果需要可以改成true，但是会消耗电脑资源
+        options: {
+            radius: 15,
+            }   
+        },
+        background: {
+            enable: false, //这是背景动画，如果需要可以改成true，但是会消耗电脑资源
+        },
+    },
+    code: {
+        options: {
+        macStyle: true,
+        line: true,
+        },
+    },
+    links: { //友链设置，具体要求请务必查看主题文档 https://bndong.github.io/Cnblogs-Theme-SimpleMemory/v2/#/Docs/Customization/config?id=page-%e5%8f%8b%e9%93%be%e9%a1%b5
+        page: [
+            {
+                name: 'BNDong', // 昵称
+                introduction: 'IT技术类博客', // 简介
+                avatar: 'https://blog.dbnuo.com/images/avatar.gif', // 头像
+                url: 'https://blog.dbnuo.com' // 友链地址
+            },
+        ],
+    },
+
+    sidebar: { // 列表数据 ['导航名称', '链接', 'icon']
+        navList: [
+            ['友链', 'url', 'icon-pengyoufill'],
+            ['GitHub', 'url', 'icon-github'],
+            ['博客园', 'https://www.cnblogs.com/', 'icon-cnblogs'],
+        ],
+        titleMsg: '欢迎来到我的世界~',
+        infoBackground: 'url', //请自己添加一个图片链接
+        customList: {
+            "我的": { // 标题
+                "data": [ // 列表数据 ['列表', '链接']
+                    ['日记', 'url'],
+                    ['收藏', 'https://wz.cnblogs.com/'],
+                    ['写随笔', 'https://i.cnblogs.com/posts/edit'],
+                    ['写文章', 'https://i.cnblogs.com/articles/edit'],
+                    ['写日记', 'https://i.cnblogs.com/diaries/edit'],
+                ],
+                "icon": "icon-shoucang" // 配置图标，参考文档：定制化/字体图标库
+                },
+            },
+        },
+    }
+</script>
+<script src="https://cdn.jsdelivr.net/gh/BNDong/Cnblogs-Theme-SimpleMemory@v2.1.0/dist/simpleMemory.js" defer></script>
+<script src="https://blog-static.cnblogs.com/files/e-cat/cursor-effects.js"></script>

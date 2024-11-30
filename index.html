@@ -23,12 +23,36 @@
 
 
         <h2>{{web.show}}</h2>
+        
         <button @click="toggle(web.show)">toggle state</button>
+
+
     </div>
 
-    <script>
+
+    <div>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <span id="blogRunTimeSpan"></span>
+    </div>
+
+
+    <script type="module">
+        import * as tools from './tools.js';
+        const utils = tools.default();
         Vue.createApp({
             setup() {
+
+                (() => {
+                    
+                    window.setInterval( () => {
+                        let runDate = utils.getRunDate('2021-01-01');
+                        $('#blogRunTimeSpan').text('博客已运行 : '+runDate.daysold+' 天 '+runDate.hrsold+' 时 '+runDate.minsold+' 分 '+runDate.seconds+' 秒');
+                        // let time = '博客已运行 : '+runDate.daysold+' 天 '+runDate.hrsold+' 时 '+runDate.minsold+' 分 '+runDate.seconds+' 秒';
+                        // console.log('博客已运行 : '+runDate.daysold+' 天 '+runDate.hrsold+' 时 '+runDate.minsold+' 分 '+runDate.seconds+' 秒');
+                    }, 500 );
+                })();
+
+
                 const number = Vue.ref(10)
 
                 const web = Vue.reactive({
@@ -50,7 +74,7 @@
                     number,
                     web,
                     edit,
-                    toggle
+                    toggle,
                 }
             }
         }).mount('#app')
