@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
     <div id="app">
@@ -25,13 +26,15 @@
         <h2>{{web.show}}</h2>
         
         <button @click="toggle(web.show)">toggle state</button>
-
-
+        <p>{{ randomText }}</p>
+        <p>vue implement</p>
+        <p>{{ blogRunTime }}</p>
     </div>
 
-
+    
+    <!-- display runtime -->
     <div>
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <p>jquery implement</p>
         <span id="blogRunTimeSpan"></span>
     </div>
 
@@ -41,11 +44,12 @@
         const utils = tools.default();
         Vue.createApp({
             setup() {
-
+                let blogRunTime = Vue.ref('');
                 (() => {
                     
                     window.setInterval( () => {
                         let runDate = utils.getRunDate('2021-01-01');
+                        blogRunTime.value = `博客已运行 : ${runDate.daysold} 天 ${runDate.hrsold} 时 ${runDate.minsold} 分 ${runDate.seconds} 秒`;
                         $('#blogRunTimeSpan').text('博客已运行 : '+runDate.daysold+' 天 '+runDate.hrsold+' 时 '+runDate.minsold+' 分 '+runDate.seconds+' 秒');
                         // let time = '博客已运行 : '+runDate.daysold+' 天 '+runDate.hrsold+' 时 '+runDate.minsold+' 分 '+runDate.seconds+' 秒';
                         // console.log('博客已运行 : '+runDate.daysold+' 天 '+runDate.hrsold+' 时 '+runDate.minsold+' 分 '+runDate.seconds+' 秒');
@@ -69,12 +73,25 @@
                 const toggle = show => {
                     web.show = !show
                 }
+                const texts = Vue.ref([
+                    'AI is one of the physics',
+                    'live a good life meet slowly',
+                ]);
+                const randomText = Vue.ref('');
+                const getRandomText = () => {
+                    const randomIndex = Math.floor(Math.random() * texts.value.length);
+                    randomText.value = texts.value[randomIndex];
+                };
+                getRandomText();
                 return {
                     msg: "success",
                     number,
                     web,
                     edit,
                     toggle,
+                    randomText,
+                    blogRunTime,
+                    getRandomText,
                 }
             }
         }).mount('#app')
