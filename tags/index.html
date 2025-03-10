@@ -1,44 +1,36 @@
----
-layout: page
-title: Tags
-permalink: /tags/
----
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Directory</title>
+</head>
+<body>
+    <h2>Available Files</h2>
+    <ul id="file-list"></ul>
 
-{% if site.posts.size == 0 %}
-  <h2>No post found</h2>
-{% endif %}
-
-<div class="tags">
-  <ul class="label">
-    {% for tag in site.tags %}
-    <li>
-      <a href="#{{ tag[0] }}">
-        <span>{{ tag[0] }}</span>
-        <span class="count">{{ tag[1] | size }}</span>
-      </a>
-    </li>
-    {% endfor %}
-  </ul>
-
-  {% for tag in site.tags %}
-    <h2 id="{{ tag[0] }}">
-      {{ tag[0] }}
-    </h2>
-    <ul class="tag">
-      {% for post in tag[1] %}
-        {% if post.title != null %}
-          <li>
-            {% if post.link %}
-              <a href="{{ post.link }}">
-            {% else %}
-              <a href="{{ site.baseurl }}{{ post.url }}">
-            {% endif %}
-                {{ post.title }}
-              </a>
-              <time>{{ post.date | date: "%Y-%m-%d" }}</time>
-          </li>
-        {% endif %}
-      {% endfor %}
-    </ul>
-  {% endfor %}
-</div>
+    <script>
+        const folder = 'files/';
+        const fileList = document.getElementById('file-list');
+        fetch(folder)
+            .then(response => response.text())
+            .then(text => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(text, "text/html");
+                const links = doc.querySelectorAll("a");
+                links.forEach(link => {
+                    const fileName = link.getAttribute("href");
+                    if (fileName !== "../") {
+                        const li = document.createElement("li");
+                        const a = document.createElement("a");
+                        a.href = folder + fileName;
+                        a.textContent = fileName;
+                        li.appendChild(a);
+                        fileList.appendChild(li);
+                    }
+                });
+            })
+            .catch(error => console.error("Error fetching directory:", error));
+    </script>
+</body>
+</html>
