@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Directory</title>
+</head>
+<body>
+    <h2>Available Files</h2>
+    <ul id="file-list"></ul>
+
+    <script>
+        const folder = 'files/';
+        const fileList = document.getElementById('file-list');
+        fetch(folder)
+            .then(response => response.text())
+            .then(text => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(text, "text/html");
+                const links = doc.querySelectorAll("a");
+                links.forEach(link => {
+                    const fileName = link.getAttribute("href");
+                    if (fileName !== "../") {
+                        const li = document.createElement("li");
+                        const a = document.createElement("a");
+                        a.href = folder + fileName;
+                        a.textContent = fileName;
+                        li.appendChild(a);
+                        fileList.appendChild(li);
+                    }
+                });
+            })
+            .catch(error => console.error("Error fetching directory:", error));
+    </script>
+</body>
+</html>
