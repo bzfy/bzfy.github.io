@@ -6,11 +6,12 @@
     <title>Document</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="./js/click.js" defer></script>
 </head>
 <body>
     <div id="app">
         {{ msg }}
-
+        <script src="./js/click.js"></script>
         <h2>{{number}}</h2>
         <h2>{{web.title}}</h2>
         <h2><a href="https://bzfy.github.io/">{{web.url}}</a></h2>
@@ -40,7 +41,7 @@
 
 
     <script type="module">
-        import * as tools from './tools.js';
+        import * as tools from './js/tools.js';
         const utils = tools.default();
         Vue.createApp({
             setup() {
@@ -83,6 +84,8 @@
                     randomText.value = texts.value[randomIndex];
                 };
                 getRandomText();
+
+
                 return {
                     msg: "success",
                     number,
