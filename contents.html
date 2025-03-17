@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>contents</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    .item { margin: 5px 0; cursor: pointer; }
+    .folder { font-weight: bold; }
+    .back { color: blue; text-decoration: underline; margin-bottom: 10px; }
+    a { text-decoration: none; color: inherit; }
+  </style>
+</head>
+<body>
+  <h1>contents</h1>
+  <div id="listing"></div>
+
+  <script>
+    // 请根据你的实际情况修改以下变量
+    const owner = 'bzfy';           // 如：bzfy
+    const repo = 'bzfy.github.io';                  // 如：bzfy.github.io
+    const branch = 'bzfy';               // 如：develop 或 main
+    const pageBase = 'https://bzfy.github.io';  // GitHub Pages 域名
+
+    // GitHub API 地址，用于获取仓库内容（指定分支）
+    const apiBase = `https://api.github.com/repos/${owner}/${repo}/contents`;
+
+    let currentPath = '';  // 当前路径（根目录为空字符串）
+
+    // 根据路径获取目录内容，并调用 displayList 展示
+    function fetchAndDisplay(path) {
+      currentPath = path || '';
+      let url = apiBase;
+      if (currentPath !== '') {
+        url += '/' + currentPath;
+      }
+      // 指定分支
+      url += `?ref=${branch}`;
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          displayList(data);
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          document.getElementById('listing').innerText = '获取目录失败。';
+        });
+    }
+
+    // 渲染目录列表
+    function displayList(items) {
+      const listing = document.getElementById('listing');
+      listing.innerHTML = '';
+
+      // 如果不是根目录，则显示“返回上级目录”
+      if (currentPath !== '') {
+        const backDiv = document.createElement('div');
+        backDiv.className = 'item back';
+        backDiv.textContent = '← 返回上级目录';
+        backDiv.onclick = function() {
+          const parts = currentPath.split('/');
+          parts.pop();
+          fetchAndDisplay(parts.join('/'));
+        };
+        listing.appendChild(backDiv);
+      }
+
+      items.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'item';
+
+        if (item.type === 'dir') {
+          div.classList.add('folder');
+          div.textContent = '📁 ' + item.name;
+          // 点击文件夹后进入该目录
+          div.onclick = function() {
+            const newPath = currentPath ? currentPath + '/' + item.name : item.name;
+            fetchAndDisplay(newPath);
+          };
+        } else if (item.type === 'file') {
+          // 对于文件，生成指向 GitHub Pages 上该文件的链接
+          const link = document.createElement('a');
+          link.textContent = '📄 ' + item.name;
+          // 构造预览文件的地址：pageBase + '/' + 相对路径
+          const relativePath = currentPath ? currentPath + '/' + item.name : item.name;
+          link.href = pageBase + '/' + relativePath;
+          link.target = '_blank';
+          div.appendChild(link);
+        }
+        listing.appendChild(div);
+      });
+    }
+
+    // 初始加载仓库根目录（指定分支）
+    fetchAndDisplay('');
+  </script>
+</body>
+</html>
