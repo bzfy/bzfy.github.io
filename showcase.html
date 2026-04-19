@@ -1,0 +1,72 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CSS Cool Showcase</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./css/showcase.css" />
+</head>
+<body>
+  <div class="noise"></div>
+
+  <main class="wrap">
+    <header class="hero">
+      <p class="kicker">CSS Effects Lab</p>
+      <h1>炫酷样式展示页</h1>
+      <p class="sub">Hover、动画、玻璃质感、流光边框、3D 卡片、按钮特效，一页看完。</p>
+    </header>
+
+    <section class="grid">
+      <article class="panel glass">
+        <h2>Glass Card</h2>
+        <p>经典毛玻璃：透明、模糊、边缘高光。</p>
+      </article>
+
+      <article class="panel gradient-border">
+        <h2>Gradient Border</h2>
+        <p>伪元素 + 旋转渐变，边框有呼吸感。</p>
+      </article>
+
+      <article class="panel tilt" id="tiltCard">
+        <h2>3D Hover Tilt</h2>
+        <p>鼠标经过时卡片会轻微倾斜。</p>
+      </article>
+
+      <article class="panel cyber">
+        <h2>Cyber Grid</h2>
+        <p>背景网格线扫动，科技感很强。</p>
+      </article>
+    </section>
+
+    <section class="actions">
+      <button class="btn neon">Neon Button</button>
+      <button class="btn liquid">Liquid Fill</button>
+      <button class="btn glitch">Glitch Hover</button>
+    </section>
+
+    <section class="chips">
+      <span class="chip pulse">Pulse</span>
+      <span class="chip shine">Shine</span>
+      <span class="chip float">Float</span>
+    </section>
+  </main>
+
+  <script>
+    const card = document.getElementById('tiltCard');
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const rx = ((y / rect.height) - 0.5) * -10;
+      const ry = ((x / rect.width) - 0.5) * 10;
+      card.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(-4px)`;
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = 'perspective(900px) rotateX(0deg) rotateY(0deg) translateY(0)';
+    });
+  </script>
+</body>
+</html>
