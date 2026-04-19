@@ -1,9 +1,12 @@
-﻿(() => {
+(() => {
   const REPO_OWNER = "bzfy";
   const REPO_NAME = "bzfy.github.io";
   const REPO_BRANCH = "bzfy";
   const PAGE_BASE = "https://bzfy.github.io";
   const START_DATE = "2021-01-01";
+  const INTRO_SESSION_KEY = "bzfy_intro_played_v1";
+  const BOOT_SESSION_KEY = "bzfy_boot_done_v1";
+  const BOOT_MIN_MS = 950;
 
   const app = document.getElementById("app");
   if (!app) return;
@@ -11,6 +14,8 @@
   let runtimeTimer = null;
   let requestSeq = 0;
   let activeView = "";
+  let bgMotionBound = false;
+  let introInitialized = false;
 
   const contentsState = {
     loading: false,
@@ -28,6 +33,16 @@
   };
 
   const articleState = {
+    loading: false,
+    error: "",
+    items: [],
+    els: {
+      listWrap: null,
+      stateBox: null,
+    },
+  };
+
+  const repoState = {
     loading: false,
     error: "",
     items: [],
@@ -88,6 +103,154 @@
     }
   }
 
+  function showBootMask() {
+    const mask = document.createElement("div");
+    mask.className = "boot-mask";
+    mask.innerHTML = `
+      <div class="boot-inner">
+        <div class="boot-num-wrap"><span class="boot-num">0</span><span class="boot-unit">%</span></div>
+      </div>
+    `;
+    const numEl = mask.querySelector(".boot-num");
+    let visualValue = 0;
+    let disposed = false;
+
+    const setProgress = (progress) => {
+      if (disposed || !numEl) return;
+      const clamped = Math.max(0, Math.min(1, progress));
+      const target = Math.floor(clamped * 100);
+      visualValue += (target - visualValue) * 0.24;
+      const shown = Math.max(0, Math.min(100, Math.round(visualValue)));
+      numEl.textContent = String(shown);
+    };
+
+    const finish = () => {
+      if (!numEl) return;
+      numEl.textContent = "100";
+      mask.classList.add("is-done");
+    };
+
+    document.body.appendChild(mask);
+    return {
+      setProgress,
+      finish,
+      hide: () => {
+        disposed = true;
+        mask.classList.add("is-out");
+        window.setTimeout(() => {
+          mask.remove();
+        }, 420);
+      },
+    };
+  }
+
+  function playIntroOnce() {
+    if (introInitialized) return false;
+    introInitialized = true;
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return false;
+    if (sessionStorage.getItem(INTRO_SESSION_KEY) === "1") return false;
+    sessionStorage.setItem(INTRO_SESSION_KEY, "1");
+
+    const overlay = document.createElement("div");
+    overlay.className = "intro-overlay";
+    overlay.innerHTML = `
+      <div class="intro-beam intro-beam-a"></div>
+      <div class="intro-beam intro-beam-b"></div>
+      <div class="intro-grid"></div>
+      <div class="intro-shell">
+        <div class="intro-topbar-spacer"></div>
+        <div class="intro-main">
+          <div class="intro-center">
+            <p class="intro-kicker">bzfy portfolio</p>
+            <h2 class="intro-logo-word" aria-label="bzfy">
+              <svg class="intro-logo-svg" viewBox="0 0 760 180" role="img" aria-hidden="true">
+                <defs>
+                  <linearGradient id="intro-flow-rainbow" gradientUnits="userSpaceOnUse" x1="170" y1="90" x2="530" y2="90">
+                    <stop offset="0%" stop-color="#00e7ff" />
+                    <stop offset="35%" stop-color="#92ff55" />
+                    <stop offset="68%" stop-color="#ff7a59" />
+                    <stop offset="100%" stop-color="#00e7ff" />
+                    <animateTransform attributeName="gradientTransform" type="rotate" from="0 380 90" to="360 380 90" dur="5.8s" repeatCount="indefinite" />
+                  </linearGradient>
+                </defs>
+                <text class="intro-logo-letter-base" x="170" y="118">b</text>
+                <text class="intro-logo-letter-base" x="280" y="118">z</text>
+                <text class="intro-logo-letter-base" x="390" y="118">f</text>
+                <text class="intro-logo-letter-base" x="476" y="118">y</text>
+
+                <text class="intro-logo-letter-flow intro-letter-1" x="170" y="118">b</text>
+                <text class="intro-logo-letter-flow intro-letter-2" x="280" y="118">z</text>
+                <text class="intro-logo-letter-flow intro-letter-3" x="390" y="118">f</text>
+                <text class="intro-logo-letter-flow intro-letter-4" x="476" y="118">y</text>
+              </svg>
+            </h2>
+          </div>
+        </div>
+        <div class="intro-footer-spacer"></div>
+      </div>
+      <div class="intro-shutter intro-shutter-top"></div>
+      <div class="intro-shutter intro-shutter-bottom"></div>
+    `;
+
+    document.body.appendChild(overlay);
+    document.body.classList.add("intro-lock");
+
+    // Pre-warm one frame to avoid first-frame composition glitch.
+    window.requestAnimationFrame(() => {
+      overlay.classList.add("is-in");
+    });
+
+    window.setTimeout(() => {
+      overlay.classList.add("is-out");
+      document.body.classList.remove("intro-lock");
+    }, 2920);
+
+    window.setTimeout(() => {
+      overlay.remove();
+    }, 4100);
+    return true;
+  }
+
+  function bindBackgroundMotion() {
+    if (bgMotionBound) return;
+    bgMotionBound = true;
+
+    const root = document.documentElement;
+    let tx = 50;
+    let ty = 50;
+    let cx = 50;
+    let cy = 50;
+    let rafId = 0;
+
+    const applyPos = (x, y) => {
+      tx = Math.max(0, Math.min(100, (x / window.innerWidth) * 100));
+      ty = Math.max(0, Math.min(100, (y / window.innerHeight) * 100));
+    };
+
+    const tick = () => {
+      cx += (tx - cx) * 0.08;
+      cy += (ty - cy) * 0.08;
+      root.style.setProperty("--mx", cx.toFixed(2));
+      root.style.setProperty("--my", cy.toFixed(2));
+      rafId = window.requestAnimationFrame(tick);
+    };
+
+    window.addEventListener("pointermove", (e) => {
+      applyPos(e.clientX, e.clientY);
+    }, { passive: true });
+
+    window.addEventListener("touchmove", (e) => {
+      if (!e.touches || e.touches.length === 0) return;
+      const t = e.touches[0];
+      applyPos(t.clientX, t.clientY);
+    }, { passive: true });
+
+    if (!rafId) {
+      rafId = window.requestAnimationFrame(tick);
+    }
+  }
+
   function layoutHtml(active, content) {
     return `
       <div class="shell">
@@ -95,6 +258,7 @@
           <a class="brand" href="#/" data-nav="home-link">bzfy</a>
           <div class="nav-actions">
             <button class="contents-btn ${active === "contents" ? "active" : ""}" type="button" data-nav="contents">Contents</button>
+            <button class="contents-btn ${active === "repository" ? "active" : ""}" type="button" data-nav="repository">Repository</button>
             <button class="contents-btn ${active === "articles" ? "active" : ""}" type="button" data-nav="articles">Articles</button>
           </div>
         </header>
@@ -124,6 +288,13 @@
     if (articleBtn) {
       articleBtn.addEventListener("click", () => {
         navigateTo("#/articles");
+      });
+    }
+
+    const repoBtn = app.querySelector('[data-nav="repository"]');
+    if (repoBtn) {
+      repoBtn.addEventListener("click", () => {
+        navigateTo("#/repository");
       });
     }
   }
@@ -450,6 +621,125 @@
     articleState.els.listWrap = document.getElementById("articleListWrap");
   }
 
+  function updateReposDom() {
+    const { listWrap, stateBox } = repoState.els;
+    if (!listWrap || !stateBox) return;
+
+    if (repoState.loading) {
+      stateBox.className = "state-box";
+      stateBox.textContent = "加载仓库中...";
+      stateBox.style.display = "block";
+      listWrap.innerHTML = "";
+      return;
+    }
+
+    if (repoState.error) {
+      stateBox.className = "state-box error";
+      stateBox.textContent = repoState.error;
+      stateBox.style.display = "block";
+      listWrap.innerHTML = "";
+      return;
+    }
+
+    if (!repoState.items.length) {
+      stateBox.className = "state-box";
+      stateBox.textContent = "暂无仓库";
+      stateBox.style.display = "block";
+      listWrap.innerHTML = "";
+      return;
+    }
+
+    stateBox.style.display = "none";
+    listWrap.innerHTML = repoState.items
+      .map((repo) => {
+        const desc = repo.description ? escapeHtml(repo.description) : "No description";
+        const lang = repo.language ? escapeHtml(repo.language) : "Unknown";
+        const updated = new Date(repo.updated_at).toLocaleDateString("zh-CN");
+        return `
+          <article class="repo-card">
+            <h3>${escapeHtml(repo.name)}</h3>
+            <p>${desc}</p>
+            <div class="repo-meta">
+              <span>${lang}</span>
+              <span>⭐ ${repo.stargazers_count}</span>
+              <span>🍴 ${repo.forks_count}</span>
+              <span>${updated}</span>
+            </div>
+            <a class="path-btn repo-link" href="${escapeHtml(repo.html_url)}" target="_blank" rel="noopener">打开仓库</a>
+          </article>
+        `;
+      })
+      .join("");
+
+    listWrap.querySelectorAll(".repo-card").forEach((card) => {
+      const reset = () => {
+        card.style.transform = "";
+      };
+
+      card.addEventListener("mousemove", (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const rx = ((y / rect.height) - 0.5) * -2;
+        const ry = ((x / rect.width) - 0.5) * 2;
+        card.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(-0.5px)`;
+      });
+
+      card.addEventListener("mouseleave", reset);
+      card.addEventListener("blur", reset);
+    });
+  }
+
+  async function fetchRepos() {
+    repoState.loading = true;
+    repoState.error = "";
+    updateReposDom();
+
+    const mySeq = ++requestSeq;
+    try {
+      const url = `https://api.github.com/users/${REPO_OWNER}/repos?sort=updated&per_page=100`;
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error(`GitHub API ${resp.status}`);
+      const data = await resp.json();
+      if (mySeq !== requestSeq) return;
+      const arr = Array.isArray(data) ? data : [];
+      repoState.items = arr.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+    } catch (error) {
+      if (mySeq !== requestSeq) return;
+      repoState.error = `获取仓库失败：${error instanceof Error ? error.message : String(error)}`;
+      repoState.items = [];
+    } finally {
+      if (mySeq === requestSeq) {
+        repoState.loading = false;
+        updateReposDom();
+      }
+    }
+  }
+
+  function renderRepositoryShell() {
+    clearTimers();
+    activeView = "repository";
+
+    app.innerHTML = layoutHtml(
+      "repository",
+      `
+      <section class="view contents-view">
+        <div class="contents-toolbar">
+          <strong>Repository</strong>
+          <a class="path-current" href="https://github.com/${REPO_OWNER}" target="_blank" rel="noopener">@${REPO_OWNER}</a>
+        </div>
+        <div class="state-box" id="repoStateBox"></div>
+        <div class="repo-grid" id="repoListWrap"></div>
+      </section>
+      `
+    );
+
+    bindTopNav();
+
+    repoState.els.stateBox = document.getElementById("repoStateBox");
+    repoState.els.listWrap = document.getElementById("repoListWrap");
+  }
+
   function renderRoute() {
     const route = getRoute();
 
@@ -470,6 +760,14 @@
       return;
     }
 
+    if (route.path === "/repository") {
+      if (activeView !== "repository") {
+        renderRepositoryShell();
+      }
+      void fetchRepos();
+      return;
+    }
+
     if (route.path !== "/") {
       navigateTo("#/");
       return;
@@ -479,5 +777,35 @@
   }
 
   window.addEventListener("hashchange", renderRoute);
+  bindBackgroundMotion();
   renderRoute();
+
+  const skipBoot = sessionStorage.getItem(BOOT_SESSION_KEY) === "1";
+  if (skipBoot) {
+    playIntroOnce();
+  } else {
+    const bootStart = performance.now();
+    const boot = showBootMask();
+
+    const animateBoot = () => {
+      const elapsed = performance.now() - bootStart;
+      const progress = Math.min(1, elapsed / BOOT_MIN_MS);
+      boot.setProgress(progress);
+      if (progress < 1) {
+        window.requestAnimationFrame(animateBoot);
+        return;
+      }
+
+      sessionStorage.setItem(BOOT_SESSION_KEY, "1");
+      playIntroOnce();
+      boot.finish();
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => boot.hide());
+      });
+    };
+
+    window.requestAnimationFrame(animateBoot);
+  }
 })();
+
+
